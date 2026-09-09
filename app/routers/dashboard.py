@@ -204,7 +204,7 @@ def dashboard(
 <header>
   <div><h1>Patient Registration Dashboard</h1>
   <div class="sub">Records collected by the voice AI intake agent</div></div>
-  <div class="sub">API docs: <code>/docs</code> &middot; JSON: <code>/patients</code></div>
+  <div class="sub"><a href="/call"><b>&#127908; Talk to the agent in your browser</b></a><br>API docs: <code>/docs</code> &middot; JSON: <code>/patients</code></div>
 </header>
 
 <div class="stats">

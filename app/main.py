@@ -17,7 +17,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.config import get_settings
 from app.db import init_db
-from app.routers import dashboard, patients, vapi
+from app.routers import dashboard, patients, vapi, webcall
 from app.validators import ValidationProblem
 
 settings = get_settings()
@@ -110,6 +110,7 @@ async def _unhandled_handler(request: Request, exc: Exception):
 app.include_router(patients.router)
 app.include_router(vapi.router)
 app.include_router(dashboard.router)
+app.include_router(webcall.router)
 
 
 @app.get("/", include_in_schema=False)
