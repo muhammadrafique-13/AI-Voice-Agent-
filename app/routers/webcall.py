@@ -131,23 +131,30 @@ browser microphone.</div>
 
 </div>
 <script type="module">
-import Vapi from "https://cdn.jsdelivr.net/npm/@vapi-ai/web/+esm";
+import * as VapiModule from "https://cdn.jsdelivr.net/npm/@vapi-ai/web@2.7.0/+esm";
 
-const PUBLIC_KEY  = __PUBLIC_KEY__;
-const ASSISTANT   = __ASSISTANT_ID__;
+// jsDelivr's ESM transform of this CommonJS package double-wraps the export: the
+// module's `default` is the whole module.exports object, so the constructor actually
+// sits at `.default.default`. Resolve by looking for the first candidate that is
+// callable, which survives either packaging shape.
+function resolveVapi(mod) {
+  const candidates = [
+    mod && mod.default && mod.default.default,
+    mod && mod.default,
+    mod && mod.Vapi,
+    mod,
+  ];
+  return candidates.find((c) => typeof c === "function");
+}
+
+const PUBLIC_KEY = __PUBLIC_KEY__;
+const ASSISTANT  = __ASSISTANT_ID__;
 
 const orb    = document.getElementById("orb");
 const start  = document.getElementById("start");
 const stop   = document.getElementById("stop");
 const status = document.getElementById("status");
 const log    = document.getElementById("log");
-
-let vapi;
-try {
-  vapi = new Vapi(PUBLIC_KEY);
-} catch (err) {
-  status.textContent = "Could not load the voice client: " + err.message;
-}
 
 function setStatus(text) { status.textContent = text; }
 
@@ -162,32 +169,51 @@ function addTurn(who, text) {
   log.scrollTop = log.scrollHeight;
 }
 
-start.addEventListener("click", async () => {
-  start.disabled = true;
-  setStatus("Connecting\\u2026 allow microphone access if prompted.");
-  try {
-    await vapi.start(ASSISTANT);
-  } catch (err) {
-    start.disabled = false;
-    setStatus("Could not start the call: " + (err && err.message ? err.message : err));
-  }
-});
+function resetControls() {
+  orb.classList.remove("live", "talking");
+  stop.style.display = "none";
+  start.style.display = "inline-block";
+  start.disabled = false;
+}
 
-stop.addEventListener("click", () => vapi.stop());
+let vapi = null;
+const Vapi = resolveVapi(VapiModule);
+
+if (typeof Vapi !== "function") {
+  start.disabled = true;
+  setStatus("Voice client failed to load. Use the phone number instead.");
+} else {
+  try {
+    vapi = new Vapi(PUBLIC_KEY);
+  } catch (err) {
+    start.disabled = true;
+    setStatus("Could not initialise the voice client: " + (err && err.message ? err.message : err));
+  }
+}
 
 if (vapi) {
+  start.addEventListener("click", async () => {
+    start.disabled = true;
+    setStatus("Connecting… allow microphone access if prompted.");
+    try {
+      await vapi.start(ASSISTANT);
+    } catch (err) {
+      resetControls();
+      setStatus("Could not start the call: " + (err && err.message ? err.message : err));
+    }
+  });
+
+  stop.addEventListener("click", () => vapi.stop());
+
   vapi.on("call-start", () => {
     orb.classList.add("live");
     start.style.display = "none";
     stop.style.display = "inline-block";
-    setStatus("Connected \\u2014 say hello.");
+    setStatus("Connected — say hello.");
   });
 
   vapi.on("call-end", () => {
-    orb.classList.remove("live", "talking");
-    stop.style.display = "none";
-    start.style.display = "inline-block";
-    start.disabled = false;
+    resetControls();
     setStatus("Call ended. Check the dashboard for the saved record.");
   });
 
@@ -203,12 +229,9 @@ if (vapi) {
 
   vapi.on("error", (err) => {
     console.error(err);
-    const detail = err && (err.errorMsg || err.message) ? (err.errorMsg || err.message) : "";
+    const detail = (err && (err.errorMsg || err.message)) || "";
+    resetControls();
     setStatus("Error: " + (detail || "the call could not continue."));
-    orb.classList.remove("live", "talking");
-    stop.style.display = "none";
-    start.style.display = "inline-block";
-    start.disabled = false;
   });
 }
 </script>
