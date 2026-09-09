@@ -9,6 +9,8 @@ The Vapi *public* key is designed to be embedded in client-side code; it can onl
 calls against assistants in the account and carries no admin rights. The private key
 never leaves the server.
 """
+import html as _html
+import json
 import os
 
 from fastapi import APIRouter
@@ -16,13 +18,27 @@ from fastapi.responses import HTMLResponse
 
 router = APIRouter(tags=["dashboard"])
 
+
+def _first_line(value: str) -> str:
+    """Take the first non-empty line of an environment value.
+
+    Values pasted into a hosting dashboard routinely arrive with trailing newlines, or
+    with the same value repeated across the three environment boxes and concatenated.
+    A credential is always a single line, so anything after the first is noise.
+    """
+    for line in (value or "").splitlines():
+        line = line.strip()
+        if line:
+            return line
+    return ""
+
 # Read from the environment rather than hardcoded, even though both values are safe to
 # render into a public page (the *public* key is a browser credential by design, and an
 # assistant id is not a secret). Keeping them out of source means the repository holds no
 # vendor identifiers at all, and a fork points at its own account by changing config.
-VAPI_PUBLIC_KEY = os.getenv("VAPI_PUBLIC_KEY", "")
-VAPI_ASSISTANT_ID = os.getenv("VAPI_ASSISTANT_ID", "")
-PHONE_NUMBER = os.getenv("PUBLIC_PHONE_NUMBER", "the number in the README")
+VAPI_PUBLIC_KEY = _first_line(os.getenv("VAPI_PUBLIC_KEY", ""))
+VAPI_ASSISTANT_ID = _first_line(os.getenv("VAPI_ASSISTANT_ID", ""))
+PHONE_NUMBER = _first_line(os.getenv("PUBLIC_PHONE_NUMBER", "")) or "the number in the README"
 
 _NOT_CONFIGURED = """<!doctype html>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -117,8 +133,8 @@ browser microphone.</div>
 <script type="module">
 import Vapi from "https://cdn.jsdelivr.net/npm/@vapi-ai/web/+esm";
 
-const PUBLIC_KEY  = "__PUBLIC_KEY__";
-const ASSISTANT   = "__ASSISTANT_ID__";
+const PUBLIC_KEY  = __PUBLIC_KEY__;
+const ASSISTANT   = __ASSISTANT_ID__;
 
 const orb    = document.getElementById("orb");
 const start  = document.getElementById("start");
@@ -207,8 +223,9 @@ def web_call():
         return HTMLResponse(_NOT_CONFIGURED, status_code=503)
 
     html = (
-        _PAGE.replace("__PUBLIC_KEY__", VAPI_PUBLIC_KEY)
-        .replace("__ASSISTANT_ID__", VAPI_ASSISTANT_ID)
-        .replace("__PHONE__", PHONE_NUMBER)
+        # json.dumps supplies the quotes and escapes anything unexpected.
+        _PAGE.replace("__PUBLIC_KEY__", json.dumps(VAPI_PUBLIC_KEY))
+        .replace("__ASSISTANT_ID__", json.dumps(VAPI_ASSISTANT_ID))
+        .replace("__PHONE__", _html.escape(PHONE_NUMBER))
     )
     return HTMLResponse(html)
