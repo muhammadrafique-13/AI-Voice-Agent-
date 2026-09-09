@@ -28,6 +28,13 @@ import urllib.request
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv(os.path.join(ROOT, ".env"))
+except ImportError:
+    pass
+
 PROMPT_FILE = os.path.join(ROOT, "voice", "system_prompt.md")
 OUTPUT_FILE = os.path.join(ROOT, "voice", "vapi_assistant.json")
 

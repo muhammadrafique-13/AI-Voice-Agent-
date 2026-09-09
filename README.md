@@ -12,7 +12,7 @@ through a REST API and a web dashboard.
 
 | | |
 | --- | --- |
-| 📞 **Call the agent** | `TODO_PHONE_NUMBER` |
+| 📞 **Call the agent** | **+1 (732) 782-5627** |
 | 🔌 **API base URL** | `TODO_BASE_URL` |
 | 📊 **Dashboard** | `TODO_BASE_URL/dashboard` |
 | 📖 **Interactive API docs** | `TODO_BASE_URL/docs` |

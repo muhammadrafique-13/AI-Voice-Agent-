@@ -10,6 +10,14 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# Load .env before importing app.config, which reads the environment at import time.
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"))
+except ImportError:  # python-dotenv is a dev-only dependency
+    pass
+
 from app.db import init_db, session_scope  # noqa: E402
 from app.schemas import PatientCreate  # noqa: E402
 from app.services import patients as service  # noqa: E402

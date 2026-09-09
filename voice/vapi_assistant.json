@@ -30,7 +30,8 @@
           }
         },
         "server": {
-          "url": "https://REPLACE-ME.vercel.app/api/vapi/tool"
+          "url": "https://PENDING-VERCEL-DEPLOY.vercel.app/api/vapi/tool",
+          "secret": "${VAPI_SERVER_SECRET}"
         }
       },
       {
@@ -116,7 +117,8 @@
           }
         },
         "server": {
-          "url": "https://REPLACE-ME.vercel.app/api/vapi/tool"
+          "url": "https://PENDING-VERCEL-DEPLOY.vercel.app/api/vapi/tool",
+          "secret": "${VAPI_SERVER_SECRET}"
         }
       },
       {
@@ -212,7 +214,8 @@
           }
         },
         "server": {
-          "url": "https://REPLACE-ME.vercel.app/api/vapi/tool"
+          "url": "https://PENDING-VERCEL-DEPLOY.vercel.app/api/vapi/tool",
+          "secret": "${VAPI_SERVER_SECRET}"
         }
       },
       {
@@ -308,7 +311,8 @@
           }
         },
         "server": {
-          "url": "https://REPLACE-ME.vercel.app/api/vapi/tool"
+          "url": "https://PENDING-VERCEL-DEPLOY.vercel.app/api/vapi/tool",
+          "secret": "${VAPI_SERVER_SECRET}"
         }
       },
       {
@@ -400,7 +404,8 @@
           }
         },
         "server": {
-          "url": "https://REPLACE-ME.vercel.app/api/vapi/tool"
+          "url": "https://PENDING-VERCEL-DEPLOY.vercel.app/api/vapi/tool",
+          "secret": "${VAPI_SERVER_SECRET}"
         }
       },
       {
@@ -420,7 +425,8 @@
           }
         },
         "server": {
-          "url": "https://REPLACE-ME.vercel.app/api/vapi/tool"
+          "url": "https://PENDING-VERCEL-DEPLOY.vercel.app/api/vapi/tool",
+          "secret": "${VAPI_SERVER_SECRET}"
         }
       }
     ]
@@ -442,7 +448,8 @@
     ]
   },
   "server": {
-    "url": "https://REPLACE-ME.vercel.app/api/vapi/tool"
+    "url": "https://PENDING-VERCEL-DEPLOY.vercel.app/api/vapi/tool",
+    "secret": "${VAPI_SERVER_SECRET}"
   },
   "serverMessages": [
     "tool-calls",
