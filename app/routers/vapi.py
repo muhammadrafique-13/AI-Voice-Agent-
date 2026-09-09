@@ -375,11 +375,17 @@ _TOOL_HANDLERS = {
 # Webhook entrypoint
 # --------------------------------------------------------------------------
 def _verify_secret(provided: Optional[str]) -> bool:
-    """Constant-time comparison so the secret cannot be recovered by timing."""
-    expected = settings.vapi_server_secret
+    """Constant-time comparison so the secret cannot be recovered by timing.
+
+    Both sides are stripped first: secrets pasted into a hosting dashboard routinely
+    pick up a trailing newline or space, and a shared secret never meaningfully has
+    leading or trailing whitespace. Stripping avoids a failure mode that presents as
+    an unexplained 401 on every live call.
+    """
+    expected = (settings.vapi_server_secret or "").strip()
     if not expected:
         return True  # verification disabled (local development only)
-    return bool(provided) and hmac.compare_digest(provided, expected)
+    return bool(provided) and hmac.compare_digest(provided.strip(), expected)
 
 
 @router.post("/tool")

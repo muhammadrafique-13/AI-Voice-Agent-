@@ -30,7 +30,7 @@
           }
         },
         "server": {
-          "url": "https://PENDING-VERCEL-DEPLOY.vercel.app/api/vapi/tool",
+          "url": "https://ai-voice-agent-alpha-ochre.vercel.app/api/vapi/tool",
           "secret": "${VAPI_SERVER_SECRET}"
         }
       },
@@ -117,7 +117,7 @@
           }
         },
         "server": {
-          "url": "https://PENDING-VERCEL-DEPLOY.vercel.app/api/vapi/tool",
+          "url": "https://ai-voice-agent-alpha-ochre.vercel.app/api/vapi/tool",
           "secret": "${VAPI_SERVER_SECRET}"
         }
       },
@@ -214,7 +214,7 @@
           }
         },
         "server": {
-          "url": "https://PENDING-VERCEL-DEPLOY.vercel.app/api/vapi/tool",
+          "url": "https://ai-voice-agent-alpha-ochre.vercel.app/api/vapi/tool",
           "secret": "${VAPI_SERVER_SECRET}"
         }
       },
@@ -311,7 +311,7 @@
           }
         },
         "server": {
-          "url": "https://PENDING-VERCEL-DEPLOY.vercel.app/api/vapi/tool",
+          "url": "https://ai-voice-agent-alpha-ochre.vercel.app/api/vapi/tool",
           "secret": "${VAPI_SERVER_SECRET}"
         }
       },
@@ -404,7 +404,7 @@
           }
         },
         "server": {
-          "url": "https://PENDING-VERCEL-DEPLOY.vercel.app/api/vapi/tool",
+          "url": "https://ai-voice-agent-alpha-ochre.vercel.app/api/vapi/tool",
           "secret": "${VAPI_SERVER_SECRET}"
         }
       },
@@ -425,7 +425,7 @@
           }
         },
         "server": {
-          "url": "https://PENDING-VERCEL-DEPLOY.vercel.app/api/vapi/tool",
+          "url": "https://ai-voice-agent-alpha-ochre.vercel.app/api/vapi/tool",
           "secret": "${VAPI_SERVER_SECRET}"
         }
       }
@@ -448,7 +448,7 @@
     ]
   },
   "server": {
-    "url": "https://PENDING-VERCEL-DEPLOY.vercel.app/api/vapi/tool",
+    "url": "https://ai-voice-agent-alpha-ochre.vercel.app/api/vapi/tool",
     "secret": "${VAPI_SERVER_SECRET}"
   },
   "serverMessages": [
