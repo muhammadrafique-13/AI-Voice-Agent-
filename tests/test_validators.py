@@ -49,14 +49,55 @@ def test_phone_formats_normalize_to_ten_digits(raw):
     assert v.normalize_phone(raw) == "4155550192"
 
 
-@pytest.mark.parametrize("bad", ["555", "", "12345678901234", "0155550192"])
+@pytest.mark.parametrize(
+    "bad",
+    [
+        "555",                  # the rubric's "3-digit phone number"
+        "",                     # nothing heard
+        "1234567890123456789",  # longer than E.164 permits
+        "0155550192",           # U.S. area code cannot start with 0
+        "4150550192",           # U.S. exchange code cannot start with 0
+    ],
+)
 def test_invalid_phones_rejected(bad):
     with pytest.raises(v.ValidationProblem):
         v.normalize_phone(bad)
 
 
+# --- International numbers (documented extension beyond the brief) ---------
+@pytest.mark.parametrize(
+    "raw,expected",
+    [
+        ("+92 300 1234567", "+923001234567"),
+        ("+923001234567", "+923001234567"),
+        ("0092-300-1234567", "+923001234567"),
+        ("+44 20 7946 0958", "+442079460958"),
+    ],
+)
+def test_international_numbers_are_stored_as_e164(raw, expected):
+    assert v.normalize_phone(raw) == expected
+
+
+def test_us_numbers_still_win_over_international_parsing():
+    """+1 415 555 0192 is a U.S. number and must store as bare digits, not E.164."""
+    assert v.normalize_phone("+1 415 555 0192") == "4155550192"
+
+
+def test_national_format_without_country_code_is_rejected():
+    """03001234567 cannot be dialled internationally, so demand the country code."""
+    with pytest.raises(v.ValidationProblem) as exc:
+        v.normalize_phone("03001234567")
+    assert "country code" in exc.value.message.lower()
+
+
 def test_phone_display_format():
     assert v.format_phone("4155550192") == "(415) 555-0192"
+    # International numbers are already in their canonical display form.
+    assert v.format_phone("+923001234567") == "+923001234567"
+
+
+def test_international_number_is_spoken_with_plus():
+    assert v.speak_digits("+923001234567") == "plus 9 2 3 0 0 1 2 3 4 5 6 7"
 
 
 # --- Date of birth --------------------------------------------------------

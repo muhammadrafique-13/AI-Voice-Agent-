@@ -42,7 +42,8 @@ class Patient(Base):
     last_name = Column(String(50), nullable=False)
     date_of_birth = Column(Date, nullable=False)
     sex = Column(String(20), nullable=False)
-    phone_number = Column(String(10), nullable=False)  # stored normalized: 10 digits
+    # 10 bare digits for U.S. numbers, or E.164 with a leading "+" for international.
+    phone_number = Column(String(20), nullable=False)
     address_line_1 = Column(String(200), nullable=False)
     city = Column(String(100), nullable=False)
     state = Column(String(2), nullable=False)
@@ -55,7 +56,7 @@ class Patient(Base):
     insurance_member_id = Column(String(60), nullable=True)
     preferred_language = Column(String(60), nullable=False, default="English")
     emergency_contact_name = Column(String(120), nullable=True)
-    emergency_contact_phone = Column(String(10), nullable=True)
+    emergency_contact_phone = Column(String(20), nullable=True)
 
     # --- Provenance ---------------------------------------------------------
     # Which telephony call created this row. Doubles as the idempotency key: an LLM
@@ -82,7 +83,10 @@ class Patient(Base):
         CheckConstraint(
             "sex IN ('Male','Female','Other','Decline to Answer')", name="ck_patients_sex"
         ),
-        CheckConstraint("length(phone_number) = 10", name="ck_patients_phone_len"),
+        # 10 for a bare U.S. number, up to 16 for "+" plus 15 E.164 digits.
+        CheckConstraint(
+            "length(phone_number) BETWEEN 8 AND 16", name="ck_patients_phone_len"
+        ),
         CheckConstraint("length(state) = 2", name="ck_patients_state_len"),
         CheckConstraint(
             "length(zip_code) IN (5, 10)", name="ck_patients_zip_len"

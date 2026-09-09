@@ -62,7 +62,10 @@ REQUIRED_FIELDS = {
         "enum": ["Male", "Female", "Other", "Decline to Answer"],
         "description": "Exactly one of the four allowed values.",
     },
-    "phone_number": _str("10-digit U.S. phone number, digits only."),
+    "phone_number": _str(
+        "Best callback number. A 10-digit U.S. number, or an international number "
+        "with its country code included, e.g. +923001234567."
+    ),
     "address_line_1": _str("Street number and name."),
     "city": _str("City name."),
     "state": _str("Two-letter U.S. state abbreviation, e.g. TX."),
@@ -76,7 +79,9 @@ OPTIONAL_FIELDS = {
     "insurance_member_id": _str("Member or subscriber ID, letters and digits."),
     "preferred_language": _str("Preferred spoken language. Defaults to English."),
     "emergency_contact_name": _str("Emergency contact's full name."),
-    "emergency_contact_phone": _str("Emergency contact's 10-digit U.S. phone number."),
+    "emergency_contact_phone": _str(
+        "Emergency contact's number. U.S. 10-digit, or international with country code."
+    ),
 }
 
 ALL_FIELDS = dict(REQUIRED_FIELDS, **OPTIONAL_FIELDS)

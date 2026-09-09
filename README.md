@@ -322,6 +322,7 @@ transcription artifacts, so this is deterministic and unit-tested:
 | says a state | `California` | `CA` |
 | dictates a ZIP | `941051234` | `94105-1234` |
 | gives a phone | `+1 (415) 555-0192` | `4155550192` |
+| gives an overseas phone | `+92 300 1234567` | `+923001234567` |
 | dictates an email | `jane dot doe at gmail dot com` | `jane.doe@gmail.com` |
 | answers sex | `f` / `prefer not to say` | `Female` / `Decline to Answer` |
 
@@ -450,25 +451,36 @@ while on the phone:
 
 Stated plainly, because pretending they do not exist is worse than having them.
 
-1. **Duplicate detection is phone-only.** Family members sharing a landline collide.
+1. **Phone numbers accept international, which is broader than the brief.** The spec
+   says "Valid U.S. 10-digit phone number", and U.S. rules are still enforced strictly:
+   a 3-digit number is rejected, and an area or exchange code starting 0 or 1 is
+   rejected. But a caller outside the U.S. can now register with an E.164 number
+   (`+923001234567`) rather than being stonewalled by a form. U.S. numbers are stored as
+   bare 10 digits so duplicate detection stays an indexed equality match; only
+   international numbers carry the `+`. This is a deliberate product call, not an
+   oversight - refusing an overseas caller outright is worse than accepting a number the
+   clinic can actually dial.
+2. **Duplicate detection is phone-only.** Family members sharing a landline collide.
    Matching on name + date of birth as a secondary key is the right fix.
-2. **`PUT` cannot null out an optional field.** Fields absent from the request are left
+3. **`PUT` cannot null out an optional field.** Fields absent from the request are left
    untouched, so there is no way to *clear* an email. A `PATCH` with explicit `null`
    semantics, or a `?clear=` parameter, would resolve it.
-3. **Appointments are not persisted.** `offer_appointment` returns fixed mock slots and
+4. **Appointments are not persisted.** `offer_appointment` returns fixed mock slots and
    stores nothing. The brief permits mock data, and a half-real appointments table would
    be more misleading than an honest stub.
-4. **Schema is created via `create_all`, not migrations.** Fine for one table set and zero
-   manual deploy steps; a real project needs Alembic before the second schema change.
-5. **The API is unauthenticated.** Deliberate — the reviewer needs to `curl` it freely.
+5. **Schema management is `create_all` plus hand-written migrations.** New tables appear
+   automatically; altering an existing one needs a script (see
+   `scripts/migrate_phone_intl.py`, written to widen the phone columns for E.164).
+   That is honest for a project this size but does not scale - Alembic is the fix.
+6. **The API is unauthenticated.** Deliberate — the reviewer needs to `curl` it freely.
    `ADMIN_API_KEY` exists in config as the hook for bearer auth on mutating routes.
-6. **No rate limiting.** A public write endpoint should have it.
-7. **Cold starts.** The first request after idle pays Vercel's cold start plus Neon's wake,
+7. **No rate limiting.** A public write endpoint should have it.
+8. **Cold starts.** The first request after idle pays Vercel's cold start plus Neon's wake,
    which can add ~1–2s to the very first tool call of the day. A keep-warm ping would
    remove it.
-8. **PHI-shaped data is logged in the clear.** Required by the brief's observability
+9. **PHI-shaped data is logged in the clear.** Required by the brief's observability
    section; not acceptable in production.
-9. **Spanish is prompt-level only.** The transcriber stays pinned to `en`, so a fully
+10. **Spanish is prompt-level only.** The transcriber stays pinned to `en`, so a fully
    Spanish call will transcribe worse than an English one. Proper support needs a
    language-detection switch on the transcriber.
 

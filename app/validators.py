@@ -138,35 +138,83 @@ def validate_name(value: str, field: str) -> str:
     return value
 
 
+# Shortest plausible national number (some countries use 7). Anything shorter is a
+# mis-hearing, not a phone number - this is what rejects the rubric's "3-digit number".
+_MIN_INTL_DIGITS = 7
+# E.164 caps the total at 15 digits including the country code.
+_MAX_INTL_DIGITS = 15
+
+
 def normalize_phone(value: str, field: str = "phone_number") -> str:
-    """Return a bare 10-digit U.S. number, or raise.
+    """Normalize a phone number, preferring U.S. but accepting international.
 
-    Accepts "(555) 123-4567", "+1 555 123 4567", "555.123.4567", "15551234567".
-    Storing the bare digits makes duplicate detection an indexed equality match
-    rather than fuzzy string comparison.
+    U.S. numbers are stored as bare 10 digits ("5125550142"), which keeps duplicate
+    detection an indexed equality match rather than a fuzzy comparison.
+
+    International numbers are stored in E.164 with a leading "+" ("+923001234567").
+    The brief specifies U.S. numbers, and U.S. rules are still enforced strictly for
+    anything that looks domestic; international support is an additive extension so a
+    caller outside the U.S. can complete a registration instead of being stonewalled.
+
+    Accepts "(555) 123-4567", "+1 555 123 4567", "555.123.4567", "15551234567",
+    "+92 300 1234567", "0092-300-1234567".
     """
-    digits = re.sub(r"\D", "", str(value or ""))
-    if len(digits) == 11 and digits.startswith("1"):
-        digits = digits[1:]
-    if len(digits) != 10:
+    raw = str(value or "").strip()
+    explicit_intl = raw.startswith("+") or raw.replace(" ", "").startswith("00")
+    digits = re.sub(r"\D", "", raw)
+
+    # "0092..." is the international prefix written out; normalize it to E.164 form.
+    if not raw.startswith("+") and digits.startswith("00"):
+        digits = digits[2:]
+
+    if not digits:
+        raise ValidationProblem(field, "I did not catch a phone number. Could you repeat it?")
+
+    # --- U.S. path -------------------------------------------------------
+    us_digits = digits[1:] if len(digits) == 11 and digits.startswith("1") else digits
+    looks_us = len(us_digits) == 10 and (not explicit_intl or digits.startswith("1"))
+    if looks_us:
+        # NANP rule: neither the area code nor the exchange code may start with 0 or 1.
+        if us_digits[0] in "01" or us_digits[3] in "01":
+            raise ValidationProblem(
+                field,
+                "That is not a valid U.S. number - area and exchange codes cannot "
+                "start with 0 or 1.",
+            )
+        return us_digits
+
+    # --- International path ----------------------------------------------
+    if len(digits) < _MIN_INTL_DIGITS:
         raise ValidationProblem(
             field,
-            "A U.S. phone number needs exactly 10 digits, including the area code.",
+            "That number is too short. A U.S. number needs 10 digits including the "
+            "area code, or give the country code first for an international number.",
         )
-    # NANP rule: neither the area code nor the exchange code may start with 0 or 1.
-    if digits[0] in "01" or digits[3] in "01":
+    if len(digits) > _MAX_INTL_DIGITS:
+        raise ValidationProblem(field, "That number has too many digits to be valid.")
+
+    # A national-format number with a leading trunk "0" (e.g. Pakistan's 03001234567)
+    # cannot be dialled internationally, so require the country code explicitly.
+    if not explicit_intl and digits.startswith("0"):
         raise ValidationProblem(
             field,
-            "That is not a valid U.S. number - area and exchange codes cannot start with 0 or 1.",
+            "For a number outside the U.S., please start with the country code - "
+            "for example, plus nine two for Pakistan.",
         )
-    return digits
+    return "+" + digits
 
 
-def format_phone(digits: Optional[str]) -> Optional[str]:
+def is_us_number(stored: Optional[str]) -> bool:
+    return bool(stored) and len(stored) == 10 and stored.isdigit()
+
+
+def format_phone(stored: Optional[str]) -> Optional[str]:
     """Presentation form used in API responses and the dashboard."""
-    if not digits or len(digits) != 10:
-        return digits
-    return f"({digits[:3]}) {digits[3:6]}-{digits[6:]}"
+    if not stored:
+        return stored
+    if is_us_number(stored):
+        return f"({stored[:3]}) {stored[3:6]}-{stored[6:]}"
+    return stored  # already E.164, e.g. +923001234567
 
 
 def parse_dob(value) -> date:
@@ -277,10 +325,17 @@ _ORDINALS = {1: "1st", 2: "2nd", 3: "3rd", 21: "21st", 22: "22nd", 23: "23rd", 3
 
 
 def speak_digits(value: Optional[str], groups=(3, 3, 4)) -> str:
-    """"4155550192" -> "4 1 5, 5 5 5, 0 1 9 2" so TTS reads it digit by digit."""
-    digits = re.sub(r"\D", "", value or "")
+    """"4155550192" -> "4 1 5, 5 5 5, 0 1 9 2" so TTS reads it digit by digit.
+
+    International numbers are read as "plus" followed by evenly spaced digits, since
+    the 3-3-4 grouping is a North American convention that would mislead elsewhere.
+    """
+    raw = (value or "").strip()
+    digits = re.sub(r"\D", "", raw)
     if not digits:
         return ""
+    if raw.startswith("+"):
+        return "plus " + " ".join(digits)
     if not groups:
         return " ".join(digits)
     out, idx = [], 0
