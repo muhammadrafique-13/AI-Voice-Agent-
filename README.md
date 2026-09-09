@@ -13,6 +13,7 @@ through a REST API and a web dashboard.
 | | |
 | --- | --- |
 | 📞 **Call the agent** | **+1 (732) 782-5627** |
+| 🎙️ **Or talk in your browser** | `https://ai-voice-agent-alpha-ochre.vercel.app/call` &mdash; no phone needed |
 | 🔌 **API base URL** | <https://ai-voice-agent-alpha-ochre.vercel.app> |
 | 📊 **Dashboard** | `https://ai-voice-agent-alpha-ochre.vercel.app/dashboard` |
 | 📖 **Interactive API docs** | `https://ai-voice-agent-alpha-ochre.vercel.app/docs` |
@@ -20,6 +21,11 @@ through a REST API and a web dashboard.
 
 No credentials are needed to read the API or the dashboard. Two seed patients (Jane Doe,
 Luis Ramirez) are pre-loaded so nothing looks empty before your first call.
+
+**If you would rather not dial**, `/call` opens a WebRTC call to the *same* assistant from
+the browser &mdash; same prompt, same six tools, same webhook, same database, only the
+transport differs. It shows a live transcript as you speak. Chrome or Edge, and headphones
+help (otherwise the agent hears itself through the speakers).
 
 **Fastest way to verify it works end to end:**
 
@@ -87,6 +93,7 @@ app/
     patients.py         REST API
     vapi.py             voice webhook (6 tools)
     dashboard.py        server-rendered HTML
+    webcall.py          browser (WebRTC) client for the same assistant
 voice/
   system_prompt.md      system prompt + design rationale (source of truth)
   vapi_assistant.json   generated assistant config
@@ -94,7 +101,7 @@ scripts/
   init_db.py            create schema
   seed.py               demo patients
   build_assistant.py    generate / publish the Vapi assistant
-tests/                  77 tests: unit, API integration, conversation simulator
+tests/                  85 tests: unit, API integration, conversation simulator
 api/index.py            Vercel entry point
 run.py                  local entry point
 ```
@@ -139,7 +146,7 @@ curl http://localhost:8000/patients | python -m json.tool
 ### Run the tests
 
 ```bash
-pytest -q            # 77 tests, ~3s, uses a throwaway SQLite file
+pytest -q            # 85 tests, ~4s, uses a throwaway SQLite file
 ```
 
 ### Deploy
@@ -405,7 +412,7 @@ Notable schema decisions:
 
 ## Testing
 
-**77 tests, ~3 seconds**, no external services required.
+**85 tests, ~4 seconds**, no external services required.
 
 ```bash
 pytest -q
@@ -443,7 +450,9 @@ while on the phone:
 | Multi-language | ✅ Prompt switches to Spanish; `preferred_language` recorded |
 | Call transcript | ✅ Transcript, summary, recording URL and duration stored per call, linked to the patient |
 | Dashboard | ✅ Patients, recent calls, and abandoned registrations |
-| Automated tests | ✅ 77 tests incl. the conversation simulator |
+| Automated tests | ✅ 85 tests incl. the conversation simulator |
+| *(extra)* Browser calling | ✅ `/call` &mdash; WebRTC to the same assistant, with live transcript |
+| *(extra)* International numbers | ✅ E.164 accepted alongside U.S., U.S. rules still strict |
 
 ---
 
