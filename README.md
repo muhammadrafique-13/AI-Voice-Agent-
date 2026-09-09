@@ -13,10 +13,10 @@ through a REST API and a web dashboard.
 | | |
 | --- | --- |
 | 📞 **Call the agent** | **+1 (732) 782-5627** |
-| 🔌 **API base URL** | `TODO_BASE_URL` |
-| 📊 **Dashboard** | `TODO_BASE_URL/dashboard` |
-| 📖 **Interactive API docs** | `TODO_BASE_URL/docs` |
-| ❤️ **Health check** | `TODO_BASE_URL/health` |
+| 🔌 **API base URL** | <https://ai-voice-agent-alpha-ochre.vercel.app> |
+| 📊 **Dashboard** | `https://ai-voice-agent-alpha-ochre.vercel.app/dashboard` |
+| 📖 **Interactive API docs** | `https://ai-voice-agent-alpha-ochre.vercel.app/docs` |
+| ❤️ **Health check** | `https://ai-voice-agent-alpha-ochre.vercel.app/health` |
 
 No credentials are needed to read the API or the dashboard. Two seed patients (Jane Doe,
 Luis Ramirez) are pre-loaded so nothing looks empty before your first call.
@@ -26,7 +26,7 @@ Luis Ramirez) are pre-loaded so nothing looks empty before your first call.
 ```bash
 # 1. Call the number and register yourself.
 # 2. Then find your record:
-curl "TODO_BASE_URL/patients?last_name=YOUR_LAST_NAME"
+curl "https://ai-voice-agent-alpha-ochre.vercel.app/patients?last_name=YOUR_LAST_NAME"
 ```
 
 ---
